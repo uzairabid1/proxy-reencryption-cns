@@ -6,7 +6,7 @@ from util import load_private_key
 app = Flask(__name__)
 
 user2_private_key = load_private_key('user2_private_key')
-print(user2_private_key)
+
 @app.route('/receive', methods=['POST'])
 def receive_message():
     re_encrypted_message = base64.b64decode(request.json['message'])
