@@ -1,26 +1,22 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request
 import base64
-import rsa
-from util import load_public_key
+import requests
+from util import load_public_key, RSA_encryption
 
 app = Flask(__name__)
-
 
 user2_public_key = load_public_key('user2_public_key')
 
 @app.route('/proxy', methods=['POST'])
 def proxy_message():
-    encoded_message = request.json['message']
-    encrypted_message = base64.b64decode(encoded_message)
-    chunks = [encrypted_message[i:i+245] for i in range(0, len(encrypted_message), 245)]
+    encrypted_message = request.json['message']
 
-    re_encrypted_chunks = [rsa.encrypt(chunk, user2_public_key) for chunk in chunks]
+    re_encrypted_message = RSA_encryption(encrypted_message, user2_public_key)
+    re_encoded_message = base64.b64encode(re_encrypted_message).decode()
 
-    re_encrypted_message = b''.join(re_encrypted_chunks)
+    receiver_response = requests.post('http://localhost:5003/receive', json={"message": re_encoded_message})
 
-    encoded_re_encrypted_message = base64.b64encode(re_encrypted_message).decode('utf-8')
-
-    return jsonify({"message": encoded_re_encrypted_message})
+    return receiver_response.json()
 
 if __name__ == '__main__':
     app.run(port=5002)

@@ -21,3 +21,17 @@ def load_public_key(secret_name):
     key = response['SecretString']
     public_key = rsa.PublicKey.load_pkcs1(key.encode('utf-8'))
     return public_key
+
+def RSA_encryption(plain_text, public_key):
+    result = []
+    for n in range(0,len(plain_text),245):
+        part = plain_text[n:n+245]
+        result.append( rsa.encrypt(part.encode("ascii"), public_key) )
+    return b''.join(result)
+
+def RSA_decryption(cipher_text, private_key):
+    result = []
+    for n in range(0,len(cipher_text),256):
+        part = cipher_text[n:n+256]
+        result.append( rsa.decrypt(part, private_key).decode("ascii") )
+    return ''.join(result)
